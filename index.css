@@ -1,0 +1,21 @@
+h1 {
+    color: blue;
+    font-size: 2em;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(9, 64px);
+    grid-template-rows: repeat(9, 64px);
+    gap: 2px;
+}
+
+.grid-item {
+    background-color: lightskyblue;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.grid-item:hover {
+    filter: brightness(0.8);
+}
