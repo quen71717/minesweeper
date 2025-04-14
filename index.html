@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link rel="stylesheet" href="index.css">
+    <script defer src="index.js" type="module"></script>
     <title>Document</title>
 </head>
 <body>
@@ -14,33 +15,8 @@
     <!-- 方針 -->
     <!-- cssのGrid layout を使用 -->
 
-    <div class="grid-container">
-
-
-    </div>
+    <div class="grid-container"></div>
 
 </body>
 
-<script>
-
-    const FIELD_SIZE = 9; // 9x9のフィールド
-
-    // フィールドの親要素
-    const gridContainer = document.querySelector('.grid-container');
-    // フィールドの子要素を生成
-    for (let i = 0; i < FIELD_SIZE; i++) {
-        for (let j = 0; j < FIELD_SIZE; j++) {
-            // divタグを作る
-            const gridItem = document.createElement('div');
-            // クラス付け
-            gridItem.classList.add('grid-item');
-            gridItem.setAttribute('id', `${i}-${j}`);
-            gridItem.addEventListener('click', () => {
-                console.log(`Grid item clicked y: ${i}, x: ${j}`);
-            })
-            // gridContainerの子要素に追加
-            gridContainer.appendChild(gridItem);
-        }
-    }
-</script>
 </html>

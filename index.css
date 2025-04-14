@@ -19,3 +19,19 @@ h1 {
 .grid-item:hover {
     filter: brightness(0.8);
 }
+
+.grid-item:active {
+    filter: brightness(0.8);
+}
+
+.opened {
+    background-color: chocolate;
+}
+
+.flagged {
+    background-color: greenyellow;
+}
+
+.hold {
+    background-color: khaki;
+}
