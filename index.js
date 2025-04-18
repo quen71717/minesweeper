@@ -1,5 +1,6 @@
 console.log('hello, world!')
 
+// MARK:Gameクラス
 class Game {
     // クラス定数
     static FIELD_SIZE = 9;
@@ -22,25 +23,25 @@ class Game {
 
     // インスタンス変数
     #gameState = Game.STATE_TITLE;
-    //  SAFE or BOMB が入ったフィールドの配列
-    #field;
-    // 周りに何個爆弾があるかを保存する配列
-    #aroundBombs;
-    // 旗の有無を保存する配列
-    #fieldStatus;
-    // 生成された爆弾の個数
-    #bombs;
-    // 立てた旗の数
-    #flags;
-    // ？を付けた数
-    #holds;
-    // 開けたマスの数
-    #opens;
+    #field;  //  SAFE or BOMB が入ったフィールドの配列
+    #aroundBombs;  // 周りに何個爆弾があるかを保存する配列
+    #fieldStatus;  // 旗の有無を保存する配列
+    #bombs;  // 生成された爆弾の個数
+    #flags;  // 立てた旗の数
+    #holds;  // ？を付けた数
+    #opens;  // 開けたマスの数
 
     // 仮で操作してもらう
-    #fieldDOM = document.querySelector('.grid-container')
+    #fieldDOM = document.querySelector('.grid-container');
+    #messageDOM = document.getElementById('message');
 
+    // MARK:コンストラクタ
     constructor() {
+        // インスタンス変数の初期化
+        this.#bombs = 0;
+        this.#flags = 0;
+        this.#holds = 0;
+        this.#opens = 0;
         // フィールドのDOMを生成
         this.#generateFieldDOM();
 
@@ -53,16 +54,14 @@ class Game {
         // 爆弾のカウント
         this.#countAroundBombs();
 
-        this.#flags = 0;
-        this.#holds = 0;
-        this.#opens = 0;
-
+        // ゲームを開始
         this.#gameState = Game.STATE_INGAME;
 
-        this.#drawCountToHTML();
+        // 初回描画
         this.#render();
     }
 
+    // MARK:initField
     // フィールドを初期化するメソッド
     #initField() {
         // 空の二次元配列を作る
@@ -75,6 +74,7 @@ class Game {
         // console.table(this.#fieldStatus)
     } 
 
+    // MARK:setField
     // フィールドをセットするメソッド
     #setField() {
         for(let i = 0; i < Game.FIELD_SIZE + 2; i++) {
@@ -107,6 +107,7 @@ class Game {
     // console.table(this.#field);
     }
 
+    // MARK:countAroundBombs
     // 周囲の爆弾の個数を記録するメソッド
     #countAroundBombs() {
         this.#aroundBombs = new Array(Game.FIELD_SIZE);
@@ -140,14 +141,14 @@ class Game {
         // console.table(this.#aroundBombs);
     }
 
+    // MARK:openAround
     // 周囲を開くメソッド
     #openAround(x, y) {
 
-        // 既に開かれたマスの時はなにもしない
-        if (this.#fieldStatus[y][x] == Game.OPENED) return;
+        // Noneでない時はなにもしない
+        if (this.#fieldStatus[y][x] != Game.NONE) return;
 
-        if (this.#aroundBombs[y][x] != 0) { //連鎖しないとき
-            if (this.#fieldStatus[y][x] == Game.FLAGGED) return;
+        if (this.#aroundBombs[y - 1][x - 1] != 0) { //連鎖しないとき
             this.#fieldStatus[y][x] = Game.OPENED;
             return;
         }
@@ -174,6 +175,7 @@ class Game {
         return;
     }
 
+    // MARK:drawCountToHTML
     #drawCountToHTML() {
         if (!this.#fieldDOM) return;
 
@@ -181,15 +183,19 @@ class Game {
             // console.log(cell);
             const id = cell.getAttribute('id');
             // console.log(index)
-            const y = id.split('-')[0];
-            const x = id.split('-')[1];
-            console.log(`(y: ${y}, x: ${x})`);
+            const y = Number(id.split('-')[0]);
+            const x = Number(id.split('-')[1]);
 
-            cell.innerText = this.#aroundBombs[y][x];
+            if (this.#fieldStatus[y + 1][x + 1] != Game.OPENED) continue;
+            // console.log(`(y: ${y}, x: ${x})`);
+
+            cell.innerText = (this.#aroundBombs[y][x] == 9) ? "💣" : this.#aroundBombs[y][x];
+
 
         }
     }
 
+    // MARK:render
     // 画面描画の更新を行うメソッド
     #render() {
         for (let i = 0; i < Game.FIELD_SIZE; i++) {
@@ -197,26 +203,45 @@ class Game {
                 // console.log(this.#fieldDOM.childNodes[i * Game.FIELD_SIZE + j])
                 const cell = this.#fieldDOM.childNodes[i * Game.FIELD_SIZE + j];
                 switch (this.#fieldStatus[i + 1][j + 1]) {
+                    case Game.NONE:
+                        cell.classList.remove('opened');
+                        cell.classList.remove('flagged');
+                        cell.classList.remove('hold');
+                        cell.innerText = "";
+                        break;
                     case Game.OPENED:
                         cell.classList.add('opened');
+                        cell.classList.remove('flagged');
+                        cell.classList.remove('hold');
+                        cell.innerText = "";
                         break;
                     case Game.FLAGGED:
                         cell.classList.add('flagged');
+                        cell.classList.remove('hold');
+                        cell.innerText = "🚩";
                         break;
                     case Game.HOLD:
                         cell.classList.add('hold');
+                        cell.classList.remove('flagged');
+                        cell.innerText = "❓";
                         break;
                 }
             }
         }
+        this.#drawCountToHTML();
     }
 
+    // MARK:generateFieldDOM
     // フィールドのDOMを生成するメソッド
     #generateFieldDOM() {
         
 
     // フィールドの親要素
     const gridContainer = document.querySelector('.grid-container');
+    
+    // 右クリックではコンテキストメニューが出るのでそれを防ぐ
+    gridContainer.oncontextmenu = (event) => event.preventDefault();
+
     // フィールドの子要素を生成
     for (let i = 0; i < Game.FIELD_SIZE; i++) {
         for (let j = 0; j < Game.FIELD_SIZE; j++) {
@@ -226,31 +251,34 @@ class Game {
             gridItem.classList.add('grid-item');
             gridItem.setAttribute('id', `${i}-${j}`);
             gridItem.addEventListener(
-                'click', 
+                'mousedown', 
                 this.#handleCellClick.bind(this, i, j)
             );
-            // 右クリックではコンテキストメニューが出るのでそれを防ぐ
-            gridItem.oncontextmenu = (event) => event.preventDefault();
             // gridContainerの子要素に追加
             gridContainer.appendChild(gridItem);
             }
         }
     }
 
+    // MARK:handleCellClick
     // マスをクリックしたときの処理
     #handleCellClick(i, j, event) {
         // ゲームの状態を確認
         if (this.#gameState != Game.STATE_INGAME) return;
-        if (this.#field[i+1][j+1] == Game.BOMB) {
-            this.#gameover();
-        }
-
+        
         switch (event.button) {
             case 0://左クリックなら
-            // マスを開ける
-                this.#openAround(j, i);
+
+                if (this.#fieldStatus[i + 1][j + 1] != Game.NONE) break;
+                
+                // マスを開ける
+                this.#openAround(j + 1, i + 1);
+                
+                // クリア/ゲームオーバー判定
+                this.#judgement();
                 break;
             case 2://右クリックなら
+            if (this.#fieldStatus[i + 1][j + 1] == Game.OPENED) break;
                 // 旗１→？２→なし０
                 this.#fieldStatus[i + 1][j + 1]++;
                 this.#fieldStatus[i + 1][j + 1] %= 3;
@@ -260,18 +288,67 @@ class Game {
 
         // クリックされるたびに再描画
         this.#render();
+
+        // 現在のフラグによってゲームの状態を判定
+        this.#updateState();
     }
 
+    // MARK:updateState
+    // gameStateによってゲームの進行を変える
+    #updateState() {
+        switch(this.#gameState) {
+            case Game.STATE_GAMEOVER:
+                this.#messageDOM.innerText = "GAME OVER；；";
+                break;
+            case Game.STATE_GAMECLEAR:
+                this.#messageDOM.innerText = "GAME CLEAR ＜３";
+                break;
+        }
+    }
+
+    // MARK:judgement
+    // fieldの状態を見てgameStateのフラグを立てる
+    #judgement() {
+        // ゲームオーバーの判定
+        for (let i = 1; i <= Game.FIELD_SIZE; i++) {
+            for (let j = 1; j <= Game.FIELD_SIZE; j++){
+                if (this.#field[i][j] == Game.BOMB && 
+                    this.#fieldStatus[i][j] == Game.OPENED
+                ) {
+                    this.#gameState = Game.STATE_GAMEOVER;
+                    return;
+                }
+            }
+        }
+
+        // ゲームクリアの判定
+        const safeCellCount = (Game.FIELD_SIZE * Game.FIELD_SIZE) - this.#bombs;
+        let opened = 0;
+
+        for (let i = 1; i <= Game.FIELD_SIZE; i++) {
+            for (let j = 1; j <= Game.FIELD_SIZE; j++){
+                if (this.#fieldStatus[i][j] == Game.OPENED) {
+                    opened++;
+                }
+            }
+        }
+
+        if (safeCellCount == opened) {
+            this.#gameState = Game.STATE_GAMECLEAR;
+        }
+    }
+
+    // MARK:gameover
     // ゲームオーバー
-    #gameover() {
-        this.#gameState = Game.STATE_GAMEOVER;
-        alert('がめおべら')
-    }
+    // #gameover() {
+    //     this.#gameState = Game.STATE_GAMEOVER;
+    // }
 
+    // MARK:gameclear
     // ゲームクリア
-    #gameclear() {
-        this.#gameState = Game.STATE_GAMECLEAR;
-    }
+    // #gameclear() {
+    //     this.#gameState = Game.STATE_GAMECLEAR;
+    // }
 }
 
 const game = new Game();
