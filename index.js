@@ -3,7 +3,7 @@ console.log('hello, world!')
 // MARK:Gameクラス
 class Game {
     // クラス定数
-    static FIELD_SIZE = 9;
+    #FIELD_SIZE = 9;
 
     static STATE_TITLE = 0;
     static STATE_INGAME = 1;
@@ -57,6 +57,13 @@ class Game {
         // ゲームを開始
         this.#gameState = Game.STATE_INGAME;
 
+        this.#fieldDOM.computedStyleMap.gridTemplateRows = `repeat(${
+            this.#FIELD_SIZE
+        }, 64px)`
+
+        this.#fieldDOM.computedStyleMap.gridTemplateColumns = `repeat(${
+            this.#FIELD_SIZE
+        }, 64px)`
         // 初回描画
         this.#render();
     }
@@ -65,11 +72,11 @@ class Game {
     // フィールドを初期化するメソッド
     #initField() {
         // 空の二次元配列を作る
-        this.#field = new Array(Game.FIELD_SIZE + 2);
-        this.#fieldStatus = new Array(Game.FIELD_SIZE + 2);
-        for (let i = 0; i < Game.FIELD_SIZE + 2; i++) {
-            this.#field[i] = new Array(Game.FIELD_SIZE + 2);
-            this.#fieldStatus[i] = new Array(Game.FIELD_SIZE + 2);
+        this.#field = new Array(this.#FIELD_SIZE + 2);
+        this.#fieldStatus = new Array(this.#FIELD_SIZE + 2);
+        for (let i = 0; i < this.#FIELD_SIZE + 2; i++) {
+            this.#field[i] = new Array(this.#FIELD_SIZE + 2);
+            this.#fieldStatus[i] = new Array(this.#FIELD_SIZE + 2);
         }
         // console.table(this.#fieldStatus)
     } 
@@ -77,8 +84,8 @@ class Game {
     // MARK:setField
     // フィールドをセットするメソッド
     #setField() {
-        for(let i = 0; i < Game.FIELD_SIZE + 2; i++) {
-            for(let j = 0; j < Game.FIELD_SIZE + 2; j++) {
+        for(let i = 0; i < this.#FIELD_SIZE + 2; i++) {
+            for(let j = 0; j < this.#FIELD_SIZE + 2; j++) {
                 if (
                     i == 0 ||
                     j == 0 || 
@@ -110,13 +117,13 @@ class Game {
     // MARK:countAroundBombs
     // 周囲の爆弾の個数を記録するメソッド
     #countAroundBombs() {
-        this.#aroundBombs = new Array(Game.FIELD_SIZE);
-        for (let i = 0; i < Game.FIELD_SIZE; i++) {
-            this.#aroundBombs[i] = new Array(Game.FIELD_SIZE);
+        this.#aroundBombs = new Array(this.#FIELD_SIZE);
+        for (let i = 0; i < this.#FIELD_SIZE; i++) {
+            this.#aroundBombs[i] = new Array(this.#FIELD_SIZE);
         }
         // BORDERを除いた各マスに対して
-        for (let i = 1; i <= Game.FIELD_SIZE; i++){
-            for (let j = 1; j <= Game.FIELD_SIZE; j++) {
+        for (let i = 1; i <= this.#FIELD_SIZE; i++){
+            for (let j = 1; j <= this.#FIELD_SIZE; j++) {
                 let count = 0;
 
                 if (this.#field[i][j] == Game.BOMB) {
@@ -165,8 +172,8 @@ class Game {
                 if (
                     0 < i + y && 
                     0 < j + x && 
-                    i + y <= Game.FIELD_SIZE && 
-                    j + x <= Game.FIELD_SIZE
+                    i + y <= this.#FIELD_SIZE && 
+                    j + x <= this.#FIELD_SIZE
                 ) {
                     this.#openAround(x + j, y + i);
                 }
@@ -198,10 +205,10 @@ class Game {
     // MARK:render
     // 画面描画の更新を行うメソッド
     #render() {
-        for (let i = 0; i < Game.FIELD_SIZE; i++) {
-            for (let j = 0; j < Game.FIELD_SIZE; j++) {
-                // console.log(this.#fieldDOM.childNodes[i * Game.FIELD_SIZE + j])
-                const cell = this.#fieldDOM.childNodes[i * Game.FIELD_SIZE + j];
+        for (let i = 0; i < this.#FIELD_SIZE; i++) {
+            for (let j = 0; j < this.#FIELD_SIZE; j++) {
+                // console.log(this.#fieldDOM.childNodes[i * this.#FIELD_SIZE + j])
+                const cell = this.#fieldDOM.childNodes[i * this.#FIELD_SIZE + j];
                 switch (this.#fieldStatus[i + 1][j + 1]) {
                     case Game.NONE:
                         cell.classList.remove('opened');
@@ -243,8 +250,8 @@ class Game {
     gridContainer.oncontextmenu = (event) => event.preventDefault();
 
     // フィールドの子要素を生成
-    for (let i = 0; i < Game.FIELD_SIZE; i++) {
-        for (let j = 0; j < Game.FIELD_SIZE; j++) {
+    for (let i = 0; i < this.#FIELD_SIZE; i++) {
+        for (let j = 0; j < this.#FIELD_SIZE; j++) {
             // divタグを作る
             const gridItem = document.createElement('div');
             // クラス付け
@@ -310,8 +317,8 @@ class Game {
     // fieldの状態を見てgameStateのフラグを立てる
     #judgement() {
         // ゲームオーバーの判定
-        for (let i = 1; i <= Game.FIELD_SIZE; i++) {
-            for (let j = 1; j <= Game.FIELD_SIZE; j++){
+        for (let i = 1; i <= this.#FIELD_SIZE; i++) {
+            for (let j = 1; j <= this.#FIELD_SIZE; j++){
                 if (this.#field[i][j] == Game.BOMB && 
                     this.#fieldStatus[i][j] == Game.OPENED
                 ) {
@@ -322,11 +329,11 @@ class Game {
         }
 
         // ゲームクリアの判定
-        const safeCellCount = (Game.FIELD_SIZE * Game.FIELD_SIZE) - this.#bombs;
+        const safeCellCount = (this.#FIELD_SIZE * this.#FIELD_SIZE) - this.#bombs;
         let opened = 0;
 
-        for (let i = 1; i <= Game.FIELD_SIZE; i++) {
-            for (let j = 1; j <= Game.FIELD_SIZE; j++){
+        for (let i = 1; i <= this.#FIELD_SIZE; i++) {
+            for (let j = 1; j <= this.#FIELD_SIZE; j++){
                 if (this.#fieldStatus[i][j] == Game.OPENED) {
                     opened++;
                 }
