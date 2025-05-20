@@ -27,19 +27,19 @@ class Game {
     #aroundBombs;  // 周りに何個爆弾があるかを保存する配列
     #fieldStatus;  // 旗の有無を保存する配列
     #bombs;  // 生成された爆弾の個数
-    #flags;  // 立てた旗の数
     #holds;  // ？を付けた数
     #opens;  // 開けたマスの数
 
     // 仮で操作してもらう
     #fieldDOM = document.querySelector('.grid-container');
     #messageDOM = document.getElementById('message');
+    #bombBox = document.getElementById('bomb-count');
+    #flagBox = document.getElementById('flag-count');
 
     // MARK:コンストラクタ
     constructor() {
         // インスタンス変数の初期化
         this.#bombs = 0;
-        this.#flags = 0;
         this.#holds = 0;
         this.#opens = 0;
         // フィールドのDOMを生成
@@ -111,6 +111,8 @@ class Game {
                 // this.#field[i][j] = rand < 0.3 ? Game.BOMB :Game.SAFE;
             }
         }
+        // console.log(this.#bombs);
+        // console.log(this.#flagBox, this.#flags);
     // console.table(this.#field);
     }
 
@@ -200,6 +202,7 @@ class Game {
 
 
         }
+        // this.#bombBox.innerText = this.#bombs
     }
 
     // MARK:render
@@ -226,6 +229,8 @@ class Game {
                         cell.classList.add('flagged');
                         cell.classList.remove('hold');
                         cell.innerText = "🚩";
+                        // this.#flags += 1
+                        // console.log(this.#flags)
                         break;
                     case Game.HOLD:
                         cell.classList.add('hold');
@@ -235,7 +240,19 @@ class Game {
                 }
             }
         }
+        
         this.#drawCountToHTML();
+
+        // 爆弾数・旗数の表示を更新
+        this.#bombBox.innerText = this.#bombs;
+        let flagCount = 0;
+        for (let i = 1; i <= this.#FIELD_SIZE; i++) {
+            for (let j = 1; j <= this.#FIELD_SIZE; j++) {
+                if (this.#fieldStatus[i][j] === Game.FLAGGED) flagCount++;
+            }
+        }
+        this.#flagBox.innerText = flagCount;
+        // ...existing code...
     }
 
     // MARK:generateFieldDOM
